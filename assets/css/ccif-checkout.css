@@ -1,8 +1,3 @@
-/* فیونت فارسی مناسب */
-.woocommerce-checkout * {
-  font-family: 'Tahoma', sans-serif !important;
-}
-
 /* فریم ورودی‌ها */
 .woocommerce-checkout .form-row input,
 .woocommerce-checkout .form-row select {

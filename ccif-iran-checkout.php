@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CCIF Iran Checkout
  * Description: افزودن فیلدهای صورتحساب شامل درخواست فاکتور، نوع شخص و لیست استان/شهر ایران به صورت دینامیک در ووکامرس
- * Version: 1.0
+ * Version: 1.1
  * Author: Your Name
  * Text Domain: ccif-iran-checkout
  */
@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class CCIF_Iran_Checkout {
 
     public function __construct() {
-        add_filter( 'woocommerce_checkout_fields', [ $this, 'modify_checkout_fields' ] );
+        // اولویت 1001 برای اطمینان از اجرای این فیلتر بعد از سایر افزونه‌ها
+        add_filter( 'woocommerce_checkout_fields', [ $this, 'modify_checkout_fields' ], 1001 );
         add_action( 'wp_enqueue_scripts',       [ $this, 'enqueue_assets' ] );
     }
 
@@ -34,6 +35,7 @@ class CCIF_Iran_Checkout {
         foreach ( $data as $province ) {
             $slug           = sanitize_title( $province['name'] );
             $states[ $slug ] = $province['name'];
+            // This needs to be keyed by province slug to work correctly in JS
             $cities[ $slug ] = array_column( $province['cities'], 'name' );
         }
 
@@ -44,7 +46,8 @@ class CCIF_Iran_Checkout {
      * اصلاح فیلدهای صورتحساب ووکامرس
      */
     public function modify_checkout_fields( $fields ) {
-        // فیلدهای پیش‌فرض ووکامرس را حذف می‌کنیم
+
+        // --- قدم اول: حذف فیلدهای پیش‌فرض ---
         unset(
             $fields['billing']['billing_first_name'],
             $fields['billing']['billing_last_name'],
@@ -56,44 +59,43 @@ class CCIF_Iran_Checkout {
             $fields['billing']['billing_phone']
         );
 
-        $billing = $fields['billing'];
+        // --- قدم دوم: اصلاح فیلدهای موجود و افزودن فیلدهای جدید ---
 
-        // --- فیلدهای سفارشی ---
-
-        // استان
         $iran = $this->load_iran_data();
-        $billing['billing_state'] = [
-            'type'     => 'select',
-            'label'    => 'استان',
-            'options'  => [ '' => 'انتخاب کنید' ] + $iran['states'],
-            'class'    => [ 'form-row-first' ],
-            'priority' => 10,
-            'required' => true,
+
+        // اصلاح فیلد استان
+        $fields['billing']['billing_state'] = [
+            'type'      => 'select',
+            'label'     => 'استان',
+            'required'  => true,
+            'class'     => ['form-row-first'],
+            'priority'  => 10,
+            'options'   => [ '' => 'انتخاب کنید' ] + $iran['states'],
         ];
 
-        // شهر
-        $billing['billing_city'] = [
-            'type'     => 'select',
-            'label'    => 'شهر',
-            'options'  => [ '' => 'ابتدا استان را انتخاب کنید' ],
-            'class'    => [ 'form-row-last' ],
-            'priority' => 20,
-            'required' => true,
+        // اصلاح فیلد شهر
+        $fields['billing']['billing_city'] = [
+            'type'      => 'select',
+            'label'     => 'شهر',
+            'required'  => true,
+            'class'     => ['form-row-last'],
+            'priority'  => 20,
+            'options'   => [ '' => 'ابتدا استان را انتخاب کنید' ],
         ];
 
-        // درخواست صدور فاکتور
-        $billing['billing_invoice_request'] = [
+        // افزودن فیلد درخواست فاکتور
+        $fields['billing']['billing_invoice_request'] = [
             'type'     => 'checkbox',
             'label'    => 'درخواست صدور فاکتور رسمی',
             'class'    => [ 'form-row-wide' ],
             'priority' => 30,
         ];
 
-        // نوع شخص: حقیقی یا حقوقی
-        $billing['billing_person_type'] = [
+        // افزودن فیلد نوع شخص
+        $fields['billing']['billing_person_type'] = [
             'type'     => 'select',
             'label'    => 'نوع شخص',
-            'class'    => [ 'form-row-wide', 'invoice-related' ], // کلاس برای کنترل نمایش
+            'class'    => [ 'form-row-wide', 'invoice-related' ],
             'options'  => [
                 ''      => 'انتخاب کنید',
                 'real'  => 'حقیقی',
@@ -102,8 +104,8 @@ class CCIF_Iran_Checkout {
             'priority' => 40,
         ];
 
-        // کد ملی (حقیقی)
-        $billing['billing_national_code'] = [
+        // افزودن فیلد کد ملی
+        $fields['billing']['billing_national_code'] = [
             'type'        => 'text',
             'label'       => 'کد ملی',
             'class'       => [ 'form-row-first', 'real-only', 'invoice-related' ],
@@ -111,24 +113,22 @@ class CCIF_Iran_Checkout {
             'priority'    => 50,
         ];
 
-        // نام شرکت (حقوقی)
-        $billing['billing_company_name'] = [
+        // افزودن فیلد نام شرکت
+        $fields['billing']['billing_company_name'] = [
             'type'        => 'text',
             'label'       => 'نام شرکت',
             'class'       => [ 'form-row-first', 'legal-only', 'invoice-related' ],
             'priority'    => 50,
         ];
 
-        // شناسه ملی/اقتصادی (حقوقی)
-        $billing['billing_economic_code'] = [
+        // افزودن فیلد شناسه ملی/اقتصادی
+        $fields['billing']['billing_economic_code'] = [
             'type'        => 'text',
             'label'       => 'شناسه ملی/اقتصادی',
             'class'       => [ 'form-row-last', 'legal-only', 'invoice-related' ],
             'priority'    => 60,
         ];
 
-        // Override the fields
-        $fields['billing'] = $billing;
         return $fields;
     }
 
@@ -145,7 +145,7 @@ class CCIF_Iran_Checkout {
             'ccif-checkout-js',
             plugin_dir_url( __FILE__ ) . 'assets/js/ccif-checkout.js',
             [ 'jquery' ],
-            '1.0',
+            '1.1', // Version bump
             true
         );
 
@@ -162,7 +162,7 @@ class CCIF_Iran_Checkout {
             'ccif-checkout-css',
             plugin_dir_url( __FILE__ ) . 'assets/css/ccif-checkout.css',
             [],
-            '1.0'
+            '1.1' // Version bump
         );
     }
 }

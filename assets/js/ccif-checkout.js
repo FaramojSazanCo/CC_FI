@@ -1,55 +1,68 @@
 jQuery(function($) {
     'use strict';
 
-    var cities = ccifData.cities || {};
+    // اطمینان از وجود داده‌ها
+    if (typeof ccifData === 'undefined' || !ccifData.cities) {
+        console.error('CCIF Iran Checkout: City data is not available.');
+        return;
+    }
+    var cities = ccifData.cities;
 
-    // تابع برای نمایش/مخفی کردن فیلدهای شخص حقیقی/حقوقی
+    /**
+     * تابع برای نمایش/مخفی کردن فیلدهای وابسته به نوع شخص (حقیقی/حقوقی)
+     */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
         var $realFields = $('.real-only').closest('.form-row');
         var $legalFields = $('.legal-only').closest('.form-row');
 
+        // مخفی کردن هر دو گروه در ابتدا
+        $realFields.hide();
+        $legalFields.hide();
+
         if (personType === 'real') {
             $realFields.show();
-            $legalFields.hide();
         } else if (personType === 'legal') {
             $legalFields.show();
-            $realFields.hide();
-        } else {
-            $realFields.hide();
-            $legalFields.hide();
         }
-        // After toggling visibility, we need to update the required status
+
+        // پس از تغییر نمایش، وضعیت ضروری بودن را به‌روزرسانی کن
         updateRequiredStatus();
     }
 
-    // تابع برای آپدیت وضعیت ضروری بودن فیلدها
+    /**
+     * تابع برای به‌روزرسانی وضعیت ضروری (required) بودن فیلدها
+     */
     function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
         // همه فیلدهای مرتبط با فاکتور را پیدا کن
         $('.invoice-related').each(function() {
-            var $fieldWrapper = $(this).closest('.form-row');
-            var $input = $(this).find('input, select').length ? $(this).find('input, select') : $(this);
+            var $input = $(this);
+            var $fieldWrapper = $input.closest('.form-row');
 
-            // فیلد باید هم قابل مشاهده باشد و هم فاکتور درخواست شده باشد تا ضروری شود
+            // یک فیلد زمانی ضروری است که چک‌باکس فاکتور تیک خورده باشد و فیلد قابل مشاهده باشد
             var shouldBeRequired = isInvoiceRequested && $fieldWrapper.is(':visible');
 
             $input.prop('required', shouldBeRequired);
 
+            // افزودن/حذف کلاس اعتبارسنجی ووکامرس
             if (shouldBeRequired) {
                 $fieldWrapper.addClass('validate-required');
             } else {
                 $fieldWrapper.removeClass('validate-required');
             }
         });
-        // Trigger checkout update to refresh validation UI
+
+        // به‌روزرسانی رابط کاربری اعتبارسنجی ووکامرس
         $(document.body).trigger('update_checkout');
     }
 
-    // تغییر استان -> پر کردن شهرها
-    $('body').on('change', '#billing_state', function() {
-        var state = $(this).val();
+    /**
+     * تابع برای پر کردن لیست شهرها بر اساس استان انتخاب‌شده
+     */
+    function populateCities() {
+        var state = $('#billing_state').val();
         var $cityField = $('#billing_city');
         var currentCity = $cityField.val();
 
@@ -65,13 +78,24 @@ jQuery(function($) {
                 }));
             });
         }
-        $cityField.trigger('change'); // For compatibility with other plugins
-    });
+    }
 
-    // رویدادهای تغییر برای فیلدهای سفارشی
+    // --- اتصال رویدادها ---
+
+    // رویداد برای تغییر استان
+    $('body').on('change', '#billing_state', populateCities);
+
+    // رویدادها برای فیلدهای فاکتور
     $('body').on('change', '#billing_person_type', togglePersonFields);
     $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
 
-    // اجرای توابع در اولین بارگذاری صفحه
+    // --- اجرای اولیه در زمان بارگذاری صفحه ---
+
+    // اجرای اولیه برای تنظیم صحیح نمایش فیلدها
     togglePersonFields();
+
+    // اجرای اولیه برای بارگذاری شهرها در صورتی که استانی از قبل انتخاب شده باشد (مثلاً در صورت خطا در فرم)
+    if ($('#billing_state').val()) {
+        populateCities();
+    }
 });
