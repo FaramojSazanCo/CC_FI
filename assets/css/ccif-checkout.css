@@ -1,48 +1,68 @@
-/* فریم ورودی‌ها */
-.woocommerce-checkout .form-row input,
-.woocommerce-checkout .form-row select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
-}
-
-/* فاصله بین ردیف‌ها */
+/* General form styling */
 .woocommerce-checkout .form-row {
-  margin-bottom: 18px;
+    margin-bottom: 18px;
+    /* Ensure rows don't overlap, especially with floats */
+    clear: both;
 }
 
-/* نمایش ستاره اجباری */
-.woocommerce-checkout .form-row.validate-required label:after {
-  content: "*";
-  color: #e74c3c;
-  margin-left: 4px;
+.woocommerce-checkout .form-row input.input-text,
+.woocommerce-checkout .form-row select,
+.woocommerce-checkout .form-row textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
 }
 
-/* چک‌باکس فاکتور */
+/* --- Invoice Box --- */
+#billing_invoice_request_field {
+    background-color: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 25px !important; /* Add extra space after the box */
+    border-radius: 5px;
+}
+
+#billing_invoice_request_field label {
+    font-weight: bold;
+}
+
 #billing_invoice_request {
-  transform: scale(1.2);
-  margin-left: 8px;
-  vertical-align: middle;
+    /* Style the checkbox itself */
+    transform: scale(1.2);
+    margin-left: 8px;
+    vertical-align: middle;
 }
 
-/* ردیف تمام‌عرض */
-.woocommerce-checkout .form-row-wide {
-  clear: both;
+/* --- Required Field Asterisk --- */
+/* This targets the standard WooCommerce required field markup, which is an <abbr> tag. */
+/* We ensure it's visible and styled correctly. */
+.woocommerce-checkout .form-row.validate-required .required {
+    visibility: visible;
+    color: #e74c3c;
+    font-weight: bold;
+    text-decoration: none; /* Remove underline from abbr tag */
+    border: 0;
 }
 
-/* دکمه ثبت سفارش */
+/* Hide any ::after pseudo-elements on the label to prevent double asterisks */
+.woocommerce-checkout .form-row.validate-required label::after {
+    content: "" !important;
+}
+
+/* --- Place Order Button --- */
 #place_order {
-  background-color: #3498db !important;
-  color: #fff !important;
-  padding: 12px 30px !important;
-  border-radius: 4px !important;
-  font-size: 16px !important;
-  transition: background 0.3s ease;
+    background-color: #3498db !important;
+    color: #fff !important;
+    padding: 12px 30px !important;
+    border-radius: 4px !important;
+    font-size: 16px !important;
+    transition: background 0.3s ease;
 }
+
 #place_order:hover {
-  background-color: #2980b9 !important;
+    background-color: #2980b9 !important;
 }

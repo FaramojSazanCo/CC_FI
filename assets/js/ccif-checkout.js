@@ -8,34 +8,13 @@ jQuery(function($) {
     var cities = ccifData.cities;
 
     /**
-     * Updates the required status of invoice-specific fields based on their visibility.
-     */
-    function updateRequiredStatus() {
-        // Find all inputs that are conditionally required for the invoice
-        $('.invoice-required').each(function() {
-            var $input = $(this);
-            var $wrapper = $input.closest('.form-row');
-            var isVisible = $wrapper.is(':visible');
-
-            // Set the required property based on visibility
-            $input.prop('required', isVisible);
-
-            // Add/remove WooCommerce's validation class
-            if (isVisible) {
-                $wrapper.addClass('validate-required');
-            } else {
-                $wrapper.removeClass('validate-required');
-            }
-        });
-    }
-
-    /**
-     * Shows/hides fields based on the selected person type ('real' or 'legal').
+     * Shows/hides fields based on the selected person type.
+     * This function ONLY handles visibility.
      */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
 
-        // Hide all person-specific fields first
+        // Hide all person-specific fields first for a clean state
         $('.real-person-field').closest('.form-row').hide();
         $('.legal-person-field').closest('.form-row').hide();
 
@@ -45,26 +24,32 @@ jQuery(function($) {
         } else if (personType === 'legal') {
             $('.legal-person-field').closest('.form-row').show();
         }
-
-        // After changing visibility, always update the required status.
-        updateRequiredStatus();
     }
 
     /**
-     * Shows/hides the entire invoice details section based on the invoice request checkbox.
+     * Updates the 'required' status of invoice fields based on the invoice checkbox.
+     * This function ONLY handles the required attribute and the asterisk.
      */
-    function toggleInvoiceSection() {
+    function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
-        var $invoiceSection = $('.invoice-section').closest('.form-row');
 
-        if (isInvoiceRequested) {
-            $invoiceSection.show();
-        } else {
-            $invoiceSection.hide();
-        }
+        $('.invoice-required').each(function() {
+            var $input = $(this);
+            var $wrapper = $input.closest('.form-row');
 
-        // After toggling the main section, update sub-fields and required status.
-        togglePersonFields();
+            // Set the required property
+            $input.prop('required', isInvoiceRequested);
+
+            // Add/remove WooCommerce's validation class to show/hide the asterisk
+            if (isInvoiceRequested) {
+                $wrapper.addClass('validate-required');
+            } else {
+                $wrapper.removeClass('validate-required');
+            }
+        });
+
+        // Trigger checkout update to refresh validation UI
+        $(document.body).trigger('update_checkout');
     }
 
     /**
@@ -89,18 +74,15 @@ jQuery(function($) {
     }
 
     // --- Event Handlers ---
-    $('body').on('change', '#billing_state', populateCities);
-    $('body').on('change', '#billing_invoice_request', toggleInvoiceSection);
     $('body').on('change', '#billing_person_type', togglePersonFields);
+    $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
+    $('body').on('change', '#billing_state', populateCities);
 
     // --- Initial Execution on Page Load ---
-    toggleInvoiceSection(); // This is the main function to call on load.
+    togglePersonFields();   // Set initial visibility for person fields
+    updateRequiredStatus(); // Set initial required status for invoice fields
 
-    // Populate cities if a state is already selected (e.g., on form validation error)
     if ($('#billing_state').val()) {
         populateCities();
     }
-
-    // Trigger update_checkout to ensure validation UI is correct on load
-    $(document.body).trigger('update_checkout');
 });
