@@ -44,69 +44,90 @@ class CCIF_Iran_Checkout {
      * اصلاح فیلدهای صورتحساب ووکامرس
      */
     public function modify_checkout_fields( $fields ) {
+        // فیلدهای پیش‌فرض ووکامرس را حذف می‌کنیم
+        unset(
+            $fields['billing']['billing_first_name'],
+            $fields['billing']['billing_last_name'],
+            $fields['billing']['billing_company'],
+            $fields['billing']['billing_country'],
+            $fields['billing']['billing_address_1'],
+            $fields['billing']['billing_address_2'],
+            $fields['billing']['billing_postcode'],
+            $fields['billing']['billing_phone']
+        );
+
         $billing = $fields['billing'];
+
+        // --- فیلدهای سفارشی ---
+
+        // استان
+        $iran = $this->load_iran_data();
+        $billing['billing_state'] = [
+            'type'     => 'select',
+            'label'    => 'استان',
+            'options'  => [ '' => 'انتخاب کنید' ] + $iran['states'],
+            'class'    => [ 'form-row-first' ],
+            'priority' => 10,
+            'required' => true,
+        ];
+
+        // شهر
+        $billing['billing_city'] = [
+            'type'     => 'select',
+            'label'    => 'شهر',
+            'options'  => [ '' => 'ابتدا استان را انتخاب کنید' ],
+            'class'    => [ 'form-row-last' ],
+            'priority' => 20,
+            'required' => true,
+        ];
 
         // درخواست صدور فاکتور
         $billing['billing_invoice_request'] = [
             'type'     => 'checkbox',
-            'label'    => 'درخواست صدور فاکتور',
+            'label'    => 'درخواست صدور فاکتور رسمی',
             'class'    => [ 'form-row-wide' ],
-            'priority' => 50,
+            'priority' => 30,
         ];
 
         // نوع شخص: حقیقی یا حقوقی
         $billing['billing_person_type'] = [
             'type'     => 'select',
             'label'    => 'نوع شخص',
-            'class'    => [ 'form-row-first' ],
+            'class'    => [ 'form-row-wide', 'invoice-related' ], // کلاس برای کنترل نمایش
             'options'  => [
                 ''      => 'انتخاب کنید',
                 'real'  => 'حقیقی',
                 'legal' => 'حقوقی',
             ],
-            'priority' => 51,
+            'priority' => 40,
         ];
 
         // کد ملی (حقیقی)
         $billing['billing_national_code'] = [
             'type'        => 'text',
             'label'       => 'کد ملی',
-            'class'       => [ 'form-row-last', 'real-only' ],
+            'class'       => [ 'form-row-first', 'real-only', 'invoice-related' ],
             'placeholder' => '۱۰ رقم بدون خط تیره',
-            'priority'    => 52,
+            'priority'    => 50,
         ];
 
         // نام شرکت (حقوقی)
         $billing['billing_company_name'] = [
             'type'        => 'text',
             'label'       => 'نام شرکت',
-            'class'       => [ 'form-row-first', 'legal-only' ],
-            'priority'    => 52,
+            'class'       => [ 'form-row-first', 'legal-only', 'invoice-related' ],
+            'priority'    => 50,
         ];
 
         // شناسه ملی/اقتصادی (حقوقی)
         $billing['billing_economic_code'] = [
             'type'        => 'text',
             'label'       => 'شناسه ملی/اقتصادی',
-            'class'       => [ 'form-row-last', 'legal-only' ],
-            'priority'    => 53,
+            'class'       => [ 'form-row-last', 'legal-only', 'invoice-related' ],
+            'priority'    => 60,
         ];
 
-        // لیست استان‌ها (از JSON)
-        $iran = $this->load_iran_data();
-        $billing['billing_state']['type']     = 'select';
-        $billing['billing_state']['label']    = 'استان';
-        $billing['billing_state']['options']  = [ '' => 'انتخاب کنید' ] + $iran['states'];
-        $billing['billing_state']['class']    = [ 'form-row-first' ];
-        $billing['billing_state']['priority'] = 54;
-
-        // لیست شهرها (ابتدا خالی و JS پر می‌کند)
-        $billing['billing_city']['type']     = 'select';
-        $billing['billing_city']['label']    = 'شهر';
-        $billing['billing_city']['options']  = [ '' => 'ابتدا استان را انتخاب کنید' ];
-        $billing['billing_city']['class']    = [ 'form-row-last' ];
-        $billing['billing_city']['priority'] = 55;
-
+        // Override the fields
         $fields['billing'] = $billing;
         return $fields;
     }

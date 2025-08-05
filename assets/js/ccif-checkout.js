@@ -1,63 +1,77 @@
-jQuery(function($){
+jQuery(function($) {
+    'use strict';
+
     var cities = ccifData.cities || {};
 
-    // تابع نمایش/مخفی‌سازی فیلدها بر اساس درخواست فاکتور و نوع شخص
-    function refreshFields() {
-        var invoice     = $('#billing_invoice_request').is(':checked');
-        var personType  = $('#billing_person_type').val();
+    // تابع برای نمایش/مخفی کردن فیلدهای شخص حقیقی/حقوقی
+    function togglePersonFields() {
+        var personType = $('#billing_person_type').val();
+        var $realFields = $('.real-only').closest('.form-row');
+        var $legalFields = $('.legal-only').closest('.form-row');
 
-        // اول همه real-only/ legal-only را مخفی و غیرفعال کن
-        $('.real-only, .legal-only')
-            .hide()
-            .find('input, select')
-            .prop('disabled', true)
-            .prop('required', false)
-            .closest('.form-row')
-            .removeClass('validate-required');
-
-        if (! invoice) {
-            return; // اگر فاکتور نخواسته، همه فیلدها آزاد
-        }
-
-        // اگر شخص حقیقی باشد
         if (personType === 'real') {
-            $('.real-only')
-                .show()
-                .find('input, select')
-                .prop('disabled', false)
-                .prop('required', true)
-                .closest('.form-row')
-                .addClass('validate-required');
+            $realFields.show();
+            $legalFields.hide();
+        } else if (personType === 'legal') {
+            $legalFields.show();
+            $realFields.hide();
+        } else {
+            $realFields.hide();
+            $legalFields.hide();
         }
+        // After toggling visibility, we need to update the required status
+        updateRequiredStatus();
+    }
 
-        // اگر شخص حقوقی باشد
-        if (personType === 'legal') {
-            $('.legal-only')
-                .show()
-                .find('input, select')
-                .prop('disabled', false)
-                .prop('required', true)
-                .closest('.form-row')
-                .addClass('validate-required');
-        }
+    // تابع برای آپدیت وضعیت ضروری بودن فیلدها
+    function updateRequiredStatus() {
+        var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
+
+        // همه فیلدهای مرتبط با فاکتور را پیدا کن
+        $('.invoice-related').each(function() {
+            var $fieldWrapper = $(this).closest('.form-row');
+            var $input = $(this).find('input, select').length ? $(this).find('input, select') : $(this);
+
+            // فیلد باید هم قابل مشاهده باشد و هم فاکتور درخواست شده باشد تا ضروری شود
+            var shouldBeRequired = isInvoiceRequested && $fieldWrapper.is(':visible');
+
+            $input.prop('required', shouldBeRequired);
+
+            if (shouldBeRequired) {
+                $fieldWrapper.addClass('validate-required');
+            } else {
+                $fieldWrapper.removeClass('validate-required');
+            }
+        });
+        // Trigger checkout update to refresh validation UI
+        $(document.body).trigger('update_checkout');
     }
 
     // تغییر استان -> پر کردن شهرها
-    $('#billing_state').on('change', function(){
-        var state = $(this).val(),
-            $city = $('#billing_city').empty();
+    $('body').on('change', '#billing_state', function() {
+        var state = $(this).val();
+        var $cityField = $('#billing_city');
+        var currentCity = $cityField.val();
 
-        $city.append('<option value="">ابتدا استان را انتخاب کنید</option>');
-        if (cities[state]) {
-            $.each(cities[state], function(i, name){
-                $city.append('<option value="'+name+'">'+name+'</option>');
+        $cityField.empty();
+        $cityField.append('<option value="">' + 'ابتدا استان را انتخاب کنید' + '</option>');
+
+        if (state && cities[state]) {
+            $.each(cities[state], function(index, cityName) {
+                $cityField.append($('<option>', {
+                    value: cityName,
+                    text: cityName,
+                    selected: cityName === currentCity
+                }));
             });
         }
+        $cityField.trigger('change'); // For compatibility with other plugins
     });
 
-    // رویدادهای تغییر
-    $('#billing_invoice_request, #billing_person_type').on('change', refreshFields);
+    // رویدادهای تغییر برای فیلدهای سفارشی
+    $('body').on('change', '#billing_person_type', togglePersonFields);
+    $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
 
-    // مقداردهی اولیه
-    refreshFields();
+    // اجرای توابع در اولین بارگذاری صفحه
+    togglePersonFields();
 });
