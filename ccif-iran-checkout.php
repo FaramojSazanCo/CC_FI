@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: CCIF Iran Checkout (Fresh Rebuild)
+ * Plugin Name: CCIF Iran Checkout (Final Fix)
  * Description: A plugin to customize the WooCommerce checkout form for Iran.
- * Version: 6.0
+ * Version: 7.0
  * Author: Your Name
  * Text Domain: ccif-iran-checkout
  */
@@ -11,26 +11,38 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class CCIF_Iran_Checkout_Rebuild {
+class CCIF_Iran_Checkout_Final {
 
     public function __construct() {
-        // Override the default billing form rendering with our custom layout
-        add_action( 'woocommerce_before_checkout_billing_form', [ $this, 'output_custom_billing_form_start' ], 5 );
-        add_action( 'woocommerce_after_checkout_billing_form', [ $this, 'output_custom_billing_form_end' ] );
+        // Remove all default fields first with high priority
+        add_filter( 'woocommerce_checkout_fields', [ $this, 'remove_default_fields' ], 1000 );
 
-        // Remove the default form
-        add_filter('woocommerce_checkout_billing', '__return_false');
+        // Then, override the form rendering completely
+        // This is a safer hook than 'woocommerce_checkout_billing'
+        add_action( 'woocommerce_before_checkout_billing_form', [ $this, 'render_custom_form_wrapper_start' ], 9 );
+        add_action( 'woocommerce_after_checkout_billing_form', [ $this, 'render_custom_form_wrapper_end' ], 11 );
 
-        // Enqueue scripts and styles
+        // Remove the default billing form action
+        add_action( 'wp', function() {
+            if ( is_checkout() && ! is_wc_endpoint_url() ) {
+                remove_action( 'woocommerce_checkout_billing', [ WC()->checkout, 'checkout_form_billing' ] );
+            }
+        });
+
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+    }
+
+    public function remove_default_fields($fields) {
+        // Unset all billing fields to ensure a clean slate
+        unset($fields['billing']);
+        return $fields;
     }
 
     private function load_iran_data() {
         $json_file = plugin_dir_path( __FILE__ ) . 'assets/data/iran-cities.json';
         if ( ! file_exists( $json_file ) ) return [ 'states' => [], 'cities' => [] ];
         $data = json_decode( file_get_contents( $json_file ), true );
-        $states = [];
-        $cities = [];
+        $states = []; $cities = [];
         foreach ( $data as $province ) {
             $slug = sanitize_title( $province['name'] );
             $states[ $slug ] = $province['name'];
@@ -39,35 +51,30 @@ class CCIF_Iran_Checkout_Rebuild {
         return [ 'states' => $states, 'cities' => $cities ];
     }
 
-    public function get_all_checkout_fields() {
+    private function get_custom_checkout_fields() {
         $iran_data = $this->load_iran_data();
         $fields = [];
 
-        // --- Define All Fields ---
         $fields['billing_invoice_request'] = ['type' => 'checkbox', 'label' => 'درخواست صدور فاکتور رسمی', 'class' => ['form-row-wide', 'ccif-invoice-request-field']];
-
         $fields['billing_person_type'] = ['type' => 'select', 'label' => 'نوع شخص', 'class' => ['form-row-wide', 'ccif-person-field'], 'options' => ['' => 'انتخاب کنید', 'real' => 'حقیقی', 'legal' => 'حقوقی']];
-
         $fields['billing_first_name'] = ['label' => 'نام', 'class' => ['form-row-first', 'ccif-person-field', 'ccif-real-person-field']];
         $fields['billing_last_name'] = ['label' => 'نام خانوادگی', 'class' => ['form-row-last', 'ccif-person-field', 'ccif-real-person-field']];
-        $fields['billing_national_code'] = ['label' => 'کد ملی', 'class' => ['form-row-wide', 'ccif-person-field', 'ccif-real-person-field'], 'placeholder' => '۱۰ رقم بدون خط تیره'];
-
+        $fields['billing_national_code'] = ['label' => 'کد ملی', 'class' => ['form-row-wide', 'ccif-person-field', 'ccif-real-person-field'], 'placeholder' => '۱۰ رقم بدون خط تیره', 'custom_attributes' => ['pattern' => '[0-9]*', 'inputmode' => 'numeric']];
         $fields['billing_company_name'] = ['label' => 'نام شرکت', 'class' => ['form-row-first', 'ccif-person-field', 'ccif-legal-person-field']];
         $fields['billing_economic_code'] = ['label' => 'شناسه ملی/اقتصادی', 'class' => ['form-row-last', 'ccif-person-field', 'ccif-legal-person-field']];
         $fields['billing_agent_first_name'] = ['label' => 'نام نماینده', 'class' => ['form-row-first', 'ccif-person-field', 'ccif-legal-person-field']];
         $fields['billing_agent_last_name'] = ['label' => 'نام خانوادگی نماینده', 'class' => ['form-row-last', 'ccif-person-field', 'ccif-legal-person-field']];
-
         $fields['billing_state'] = ['type' => 'select', 'label' => 'استان', 'required' => true, 'class' => ['form-row-first', 'ccif-address-field'], 'options' => [ '' => 'انتخاب کنید' ] + $iran_data['states']];
         $fields['billing_city'] = ['type' => 'select', 'label' => 'شهر', 'required' => true, 'class' => ['form-row-last', 'ccif-address-field'], 'options' => [ '' => 'ابتدا استان را انتخاب کنید' ]];
         $fields['billing_address_1'] = ['label' => 'آدرس دقیق', 'required' => true, 'placeholder' => 'خیابان، کوچه، پلاک، واحد', 'class' => ['form-row-wide', 'ccif-address-field']];
-        $fields['billing_postcode'] = ['label' => 'کد پستی', 'required' => true, 'type' => 'tel', 'class' => ['form-row-first', 'ccif-address-field']];
-        $fields['billing_phone'] = ['label' => 'شماره تماس', 'required' => true, 'type' => 'tel', 'class' => ['form-row-last', 'ccif-address-field']];
+        $fields['billing_postcode'] = ['label' => 'کد پستی', 'required' => true, 'type' => 'tel', 'class' => ['form-row-first', 'ccif-address-field'], 'custom_attributes' => ['pattern' => '[0-9]*', 'inputmode' => 'numeric']];
+        $fields['billing_phone'] = ['label' => 'شماره تماس', 'required' => true, 'type' => 'tel', 'class' => ['form-row-last', 'ccif-address-field'], 'custom_attributes' => ['pattern' => '[0-9]*', 'inputmode' => 'numeric']];
 
         return $fields;
     }
 
-    public function output_custom_billing_form_start($checkout) {
-        $all_fields = $this->get_all_checkout_fields();
+    public function render_custom_form_wrapper_start($checkout) {
+        $all_fields = $this->get_custom_checkout_fields();
 
         echo '<div class="ccif-checkout-form">';
 
@@ -79,13 +86,11 @@ class CCIF_Iran_Checkout_Rebuild {
         // Box 2: Person/Company Info
         echo '<div class="ccif-box person-info-box"><h2>اطلاعات خریدار</h2>';
         woocommerce_form_field('billing_person_type', $all_fields['billing_person_type'], $checkout->get_value('billing_person_type'));
-
         echo '<div class="ccif-real-person-fields-wrapper">';
         woocommerce_form_field('billing_first_name', $all_fields['billing_first_name'], $checkout->get_value('billing_first_name'));
         woocommerce_form_field('billing_last_name', $all_fields['billing_last_name'], $checkout->get_value('billing_last_name'));
         woocommerce_form_field('billing_national_code', $all_fields['billing_national_code'], $checkout->get_value('billing_national_code'));
         echo '</div>';
-
         echo '<div class="ccif-legal-person-fields-wrapper">';
         woocommerce_form_field('billing_company_name', $all_fields['billing_company_name'], $checkout->get_value('billing_company_name'));
         woocommerce_form_field('billing_economic_code', $all_fields['billing_economic_code'], $checkout->get_value('billing_economic_code'));
@@ -104,16 +109,16 @@ class CCIF_Iran_Checkout_Rebuild {
         echo '</div>';
     }
 
-    public function output_custom_billing_form_end() {
-        echo '</div>'; // Close .ccif-checkout-form
+    public function render_custom_form_wrapper_end() {
+        echo '</div>';
     }
 
     public function enqueue_assets() {
         if ( ! is_checkout() ) return;
-        wp_enqueue_script( 'ccif-checkout-js', plugin_dir_url( __FILE__ ) . 'assets/js/ccif-checkout.js', ['jquery'], '6.0', true );
+        wp_enqueue_script( 'ccif-checkout-js', plugin_dir_url( __FILE__ ) . 'assets/js/ccif-checkout.js', ['jquery'], '7.0', true );
         wp_localize_script( 'ccif-checkout-js', 'ccifData', [ 'cities' => $this->load_iran_data()['cities'] ] );
-        wp_enqueue_style( 'ccif-checkout-css', plugin_dir_url( __FILE__ ) . 'assets/css/ccif-checkout.css', [], '6.0' );
+        wp_enqueue_style( 'ccif-checkout-css', plugin_dir_url( __FILE__ ) . 'assets/css/ccif-checkout.css', [], '7.0' );
     }
 }
 
-new CCIF_Iran_Checkout_Rebuild();
+new CCIF_Iran_Checkout_Final();

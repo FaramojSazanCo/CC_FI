@@ -1,7 +1,6 @@
 jQuery(function($) {
     'use strict';
 
-    // Ensure ccifData and cities exist to prevent errors
     if (typeof ccifData === 'undefined' || !ccifData.cities) {
         console.error('CCIF Iran Checkout: City data is not available.');
         return;
@@ -65,14 +64,17 @@ jQuery(function($) {
         var state = $('#billing_state').val();
         var $cityField = $('#billing_city');
 
-        // Remember the current value if it exists
+        if (!state) {
+            $cityField.empty().append('<option value="">ابتدا استان را انتخاب کنید</option>').prop('disabled', true);
+            return;
+        }
+
         var currentCity = $cityField.val();
 
-        $cityField.empty().append('<option value="">' + 'ابتدا استان را انتخاب کنید' + '</option>');
+        $cityField.empty().append('<option value="">' + 'انتخاب کنید' + '</option>');
 
-        if (state && cities[state]) {
+        if (cities[state]) {
             $.each(cities[state], function(index, cityName) {
-                // Create new option, select it if it matches the remembered value
                 $cityField.append($('<option>', {
                     value: cityName,
                     text: cityName,
@@ -80,6 +82,8 @@ jQuery(function($) {
                 }));
             });
         }
+        // CRITICAL FIX: Re-enable the city field after populating it.
+        $cityField.prop('disabled', false);
     }
 
     // --- Event Handlers ---
@@ -90,9 +94,5 @@ jQuery(function($) {
     // --- Initial Execution on Page Load ---
     togglePersonFields();
     updateRequiredStatus();
-
-    // Populate cities on load if a state is already selected (e.g., on form validation error)
-    if ($('#billing_state').val()) {
-        populateCities();
-    }
+    populateCities(); // Run on load to set initial state of city field
 });
