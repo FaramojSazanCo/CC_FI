@@ -6,26 +6,27 @@ jQuery(function($) {
         return;
     }
     var cities = ccifData.cities;
+    var requiredStar = ' <abbr class="required" title="required">*</abbr>';
 
     /**
-     * Creates visual boxes by wrapping field groups in divs.
-     * This function should run only once on page load.
+     * Creates visual boxes by moving fields into new wrapper divs.
+     * This is the most reliable method to regroup fields rendered by WooCommerce.
      */
     function createVisualBoxes() {
         var wrapper = $('.woocommerce-billing-fields__field-wrapper');
         if (!wrapper.length || wrapper.data('ccif-boxes-created')) {
-            return; // Run only once
+            return; // Ensure this runs only once
         }
 
-        // Group fields by their function
-        var invoiceRequest = $('.ccif-invoice-request').closest('.form-row');
-        var personFields = $('.ccif-invoice-field').closest('.form-row');
-        var addressFields = $('.ccif-address-field').closest('.form-row');
+        // Create the boxes
+        var invoiceBox = $('<div class="ccif-box invoice-request-box"></div>');
+        var personBox = $('<div class="ccif-box person-info-box"><h2>اطلاعات شخص/شرکت</h2></div>');
+        var addressBox = $('<div class="ccif-box address-info-box"><h2>اطلاعات آدرس</h2></div>');
 
-        // Create boxes and append fields
-        var invoiceBox = $('<div class="ccif-box invoice-request-box"></div>').append(invoiceRequest);
-        var personBox = $('<div class="ccif-box person-info-box"><h2>اطلاعات شخص/شرکت</h2></div>').append(personFields);
-        var addressBox = $('<div class="ccif-box address-info-box"><h2>اطلاعات آدرس</h2></div>').append(addressFields);
+        // Move fields into their respective boxes using .appendTo()
+        $('.ccif-invoice-request-field').appendTo(invoiceBox);
+        $('.ccif-person-field').closest('.form-row').appendTo(personBox);
+        $('.ccif-address-field').closest('.form-row').appendTo(addressBox);
 
         // Prepend the boxes to the main wrapper in the correct order
         wrapper.prepend(addressBox).prepend(personBox).prepend(invoiceBox);
@@ -38,33 +39,46 @@ jQuery(function($) {
      */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
-        $('.ccif-real-person-field').closest('.form-row').hide();
-        $('.ccif-legal-person-field').closest('.form-row').hide();
+        $('.ccif-real-person-field').hide();
+        $('.ccif-legal-person-field').hide();
 
         if (personType === 'real') {
-            $('.ccif-real-person-field').closest('.form-row').show();
+            $('.ccif-real-person-field').show();
         } else if (personType === 'legal') {
-            $('.ccif-legal-person-field').closest('.form-row').show();
+            $('.ccif-legal-person-field').show();
         }
     }
 
     /**
-     * Updates the 'required' status of invoice fields based on the invoice checkbox.
+     * Updates the 'required' status of fields based on the invoice checkbox.
      */
     function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
-        $('.ccif-invoice-field').each(function() {
-            var $inputOrSelect = $(this).find('input, select').addBack(this);
-            var $wrapper = $inputOrSelect.closest('.form-row');
+        // --- Person/Company Fields ---
+        $('.ccif-person-field').each(function() {
+            var $wrapper = $(this);
+            var $label = $wrapper.find('label');
+            var $input = $wrapper.find('input, select');
 
-            $inputOrSelect.prop('required', isInvoiceRequested);
+            $input.prop('required', isInvoiceRequested);
 
             if (isInvoiceRequested) {
-                $wrapper.addClass('validate-required');
+                if ($label.find('.required').length === 0) {
+                    $label.append(requiredStar);
+                }
             } else {
-                $wrapper.removeClass('validate-required');
+                $label.find('.required').remove();
             }
+        });
+
+        // --- Address Fields are ALWAYS required ---
+        // This is handled in PHP, but we ensure the star is always there.
+        $('.ccif-address-field').each(function() {
+             var $label = $(this).find('label');
+             if ($label.find('.required').length === 0) {
+                $label.append(requiredStar);
+             }
         });
 
         $(document.body).trigger('update_checkout');

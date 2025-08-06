@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: CCIF Iran Checkout
- * Description: افزودن فیلدهای صورتحساب شامل درخواست فاکتور، نوع شخص و لیست استان/شهر ایران به صورت دینامیک در ووکامرس
- * Version: 4.0
+ * Description: A plugin to customize the WooCommerce checkout form for Iran.
+ * Version: 5.0
  * Author: Your Name
  * Text Domain: ccif-iran-checkout
  */
@@ -35,77 +35,76 @@ class CCIF_Iran_Checkout {
     public function setup_checkout_fields( $fields ) {
         $iran_data = $this->load_iran_data();
 
-        // Unset original fields we want to redefine or remove
+        // Unset original fields we want to remove completely
         unset(
             $fields['billing']['billing_company'],
             $fields['billing']['billing_address_2']
         );
 
-        // --- Redefine and Reorder All Fields ---
+        // --- Define Field Groups & Order ---
 
-        // Invoice Request Checkbox
+        // Group 1: Invoice Request
         $fields['billing']['billing_invoice_request'] = [
             'type'      => 'checkbox',
             'label'     => 'درخواست صدور فاکتور رسمی',
-            'class'     => ['form-row-wide', 'ccif-invoice-request'],
-            'priority'  => 5,
+            'class'     => ['form-row-wide', 'ccif-invoice-request-field'],
+            'priority'  => 10,
         ];
 
-        // Person/Company Fields
+        // Group 2: Person/Company Info
         $fields['billing']['billing_person_type'] = [
             'type'      => 'select',
             'label'     => 'نوع شخص',
-            'class'     => ['form-row-wide', 'ccif-person-type', 'ccif-invoice-field'],
-            'priority'  => 10,
-            'required'  => false, // JS controls this
+            'class'     => ['form-row-wide', 'ccif-person-field'],
+            'priority'  => 20,
+            'required'  => true,
             'options'   => ['' => 'انتخاب کنید', 'real' => 'حقیقی', 'legal' => 'حقوقی'],
         ];
-        // Modify existing fields
-        $fields['billing']['billing_first_name']['class'] = ['form-row-first', 'ccif-real-person-field', 'ccif-invoice-field'];
-        $fields['billing']['billing_first_name']['priority'] = 20;
-        $fields['billing']['billing_last_name']['class'] = ['form-row-last', 'ccif-real-person-field', 'ccif-invoice-field'];
-        $fields['billing']['billing_last_name']['priority'] = 30;
 
-        // Add new fields
-        $fields['billing']['billing_national_code'] = ['label' => 'کد ملی', 'placeholder' => '۱۰ رقم بدون خط تیره', 'class' => ['form-row-wide', 'ccif-real-person-field', 'ccif-invoice-field'], 'priority' => 40];
-        $fields['billing']['billing_company_name'] = ['label' => 'نام شرکت', 'class' => ['form-row-wide', 'ccif-legal-person-field', 'ccif-invoice-field'], 'priority' => 20];
-        $fields['billing']['billing_economic_code'] = ['label' => 'شناسه ملی/اقتصادی', 'class' => ['form-row-wide', 'ccif-legal-person-field', 'ccif-invoice-field'], 'priority' => 30];
-        $fields['billing']['billing_agent_first_name'] = ['label' => 'نام نماینده', 'class' => ['form-row-first', 'ccif-legal-person-field', 'ccif-invoice-field'], 'priority' => 40];
-        $fields['billing']['billing_agent_last_name'] = ['label' => 'نام خانوادگی نماینده', 'class' => ['form-row-last', 'ccif-legal-person-field', 'ccif-invoice-field'], 'priority' => 50];
+        // Real Person Fields
+        $fields['billing']['billing_first_name']['class'] = ['form-row-first', 'ccif-person-field', 'ccif-real-person-field'];
+        $fields['billing']['billing_first_name']['priority'] = 30;
+        $fields['billing']['billing_last_name']['class'] = ['form-row-last', 'ccif-person-field', 'ccif-real-person-field'];
+        $fields['billing']['billing_last_name']['priority'] = 40;
+        $fields['billing']['billing_national_code'] = ['label' => 'کد ملی', 'class' => ['form-row-wide', 'ccif-person-field', 'ccif-real-person-field'], 'priority' => 50, 'placeholder' => '۱۰ رقم بدون خط تیره'];
 
-        // Address Fields
+        // Legal Person Fields
+        $fields['billing']['billing_company_name'] = ['label' => 'نام شرکت', 'class' => ['form-row-first', 'ccif-person-field', 'ccif-legal-person-field'], 'priority' => 30];
+        $fields['billing']['billing_economic_code'] = ['label' => 'شناسه ملی/اقتصادی', 'class' => ['form-row-last', 'ccif-person-field', 'ccif-legal-person-field'], 'priority' => 40];
+        $fields['billing']['billing_agent_first_name'] = ['label' => 'نام نماینده', 'class' => ['form-row-first', 'ccif-person-field', 'ccif-legal-person-field'], 'priority' => 50];
+        $fields['billing']['billing_agent_last_name'] = ['label' => 'نام خانوادگی نماینده', 'class' => ['form-row-last', 'ccif-person-field', 'ccif-legal-person-field'], 'priority' => 60];
+
+        // Group 3: Address Info
         $fields['billing']['billing_state']['class'] = ['form-row-first', 'ccif-address-field'];
-        $fields['billing']['billing_state']['priority'] = 60;
+        $fields['billing']['billing_state']['priority'] = 70;
         $fields['billing']['billing_state']['options'] = [ '' => 'انتخاب کنید' ] + $iran_data['states'];
+        $fields['billing']['billing_state']['required'] = true;
         $fields['billing']['billing_city']['class'] = ['form-row-last', 'ccif-address-field'];
-        $fields['billing']['billing_city']['priority'] = 70;
+        $fields['billing']['billing_city']['priority'] = 80;
         $fields['billing']['billing_city']['options'] = [ '' => 'ابتدا استان را انتخاب کنید' ];
+        $fields['billing']['billing_city']['required'] = true;
         $fields['billing']['billing_address_1']['label'] = 'آدرس دقیق';
         $fields['billing']['billing_address_1']['placeholder'] = 'خیابان، کوچه، پلاک، واحد';
         $fields['billing']['billing_address_1']['class'] = ['form-row-wide', 'ccif-address-field'];
-        $fields['billing']['billing_address_1']['priority'] = 80;
+        $fields['billing']['billing_address_1']['priority'] = 90;
+        $fields['billing']['billing_address_1']['required'] = true;
         $fields['billing']['billing_postcode']['class'] = ['form-row-first', 'ccif-address-field'];
         $fields['billing']['billing_postcode']['type'] = 'tel';
-        $fields['billing']['billing_postcode']['priority'] = 90;
+        $fields['billing']['billing_postcode']['priority'] = 100;
+        $fields['billing']['billing_postcode']['required'] = true;
         $fields['billing']['billing_phone']['class'] = ['form-row-last', 'ccif-address-field'];
         $fields['billing']['billing_phone']['type'] = 'tel';
-        $fields['billing']['billing_phone']['priority'] = 100;
-
-        // All address fields are always required
-        foreach ($fields['billing'] as $key => $field) {
-            if (in_array('ccif-address-field', $field['class'] ?? [])) {
-                $fields['billing'][$key]['required'] = true;
-            }
-        }
+        $fields['billing']['billing_phone']['priority'] = 110;
+        $fields['billing']['billing_phone']['required'] = true;
 
         return $fields;
     }
 
     public function enqueue_assets() {
         if ( ! is_checkout() ) return;
-        wp_enqueue_script( 'ccif-checkout-js', plugin_dir_url( __FILE__ ) . 'assets/js/ccif-checkout.js', ['jquery'], '4.0', true );
+        wp_enqueue_script( 'ccif-checkout-js', plugin_dir_url( __FILE__ ) . 'assets/js/ccif-checkout.js', ['jquery'], '5.0', true );
         wp_localize_script( 'ccif-checkout-js', 'ccifData', [ 'cities' => $this->load_iran_data()['cities'] ] );
-        wp_enqueue_style( 'ccif-checkout-css', plugin_dir_url( __FILE__ ) . 'assets/css/ccif-checkout.css', [], '4.0' );
+        wp_enqueue_style( 'ccif-checkout-css', plugin_dir_url( __FILE__ ) . 'assets/css/ccif-checkout.css', [], '5.0' );
     }
 }
 

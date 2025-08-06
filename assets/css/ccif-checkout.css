@@ -4,8 +4,8 @@
     padding: 20px;
     margin-bottom: 25px;
     border-radius: 5px;
-    background-color: #f9f9f9;
-    /* Add this to contain floated elements inside */
+    background-color: #ffffff;
+    /* This is crucial for containing the floated form-rows */
     overflow: hidden;
 }
 
@@ -15,47 +15,43 @@
     border-bottom: 1px solid #e0e0e0;
     margin-bottom: 20px;
     font-size: 18px;
+    color: #333;
 }
 
 /* Specific box for the invoice request to make it stand out */
 .invoice-request-box {
-    background-color: #f0f5fa;
-    border-color: #b0c4de;
+    background-color: #f5f8fa;
+    border-color: #cdd8e3;
 }
 
 /* --- General Form Row Styling --- */
-.woocommerce-billing-fields .form-row {
+/* This ensures that the rows inside our boxes behave correctly */
+.ccif-box .form-row {
     padding: 0;
     margin: 0 0 15px;
 }
 
-.woocommerce-billing-fields .form-row-first {
+.ccif-box .form-row-first {
     float: right;
     width: 48.5%;
     clear: none;
 }
 
-.woocommerce-billing-fields .form-row-last {
+.ccif-box .form-row-last {
     float: left;
     width: 48.5%;
     clear: none;
 }
 
-.woocommerce-billing-fields .form-row-wide {
+.ccif-box .form-row-wide {
     clear: both;
 }
 
 /* --- Required Field Asterisk --- */
-/* This targets the standard WooCommerce required field markup, which is an <abbr> tag. */
-.woocommerce-checkout .form-row.validate-required label .required {
-    visibility: visible !important;
+/* The JS now handles adding/removing the <abbr> tag, so we just need to make sure
+   it has the default WooCommerce color, just in case the theme overrides it. */
+.woocommerce-checkout .form-row label .required {
     color: #e74c3c !important;
     font-weight: bold !important;
     text-decoration: none !important;
-    border: 0 !important;
-}
-
-/* Hide any ::after pseudo-elements on the label to prevent double asterisks */
-.woocommerce-checkout .form-row.validate-required label::after {
-    content: "" !important;
 }
