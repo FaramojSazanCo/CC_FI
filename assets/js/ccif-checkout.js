@@ -8,39 +8,58 @@ jQuery(function($) {
     var cities = ccifData.cities;
 
     /**
+     * Creates visual boxes by wrapping field groups in divs.
+     * This function should run only once on page load.
+     */
+    function createVisualBoxes() {
+        var wrapper = $('.woocommerce-billing-fields__field-wrapper');
+        if (!wrapper.length || wrapper.data('ccif-boxes-created')) {
+            return; // Run only once
+        }
+
+        // Group fields by their function
+        var invoiceRequest = $('.ccif-invoice-request').closest('.form-row');
+        var personFields = $('.ccif-invoice-field').closest('.form-row');
+        var addressFields = $('.ccif-address-field').closest('.form-row');
+
+        // Create boxes and append fields
+        var invoiceBox = $('<div class="ccif-box invoice-request-box"></div>').append(invoiceRequest);
+        var personBox = $('<div class="ccif-box person-info-box"><h2>اطلاعات شخص/شرکت</h2></div>').append(personFields);
+        var addressBox = $('<div class="ccif-box address-info-box"><h2>اطلاعات آدرس</h2></div>').append(addressFields);
+
+        // Prepend the boxes to the main wrapper in the correct order
+        wrapper.prepend(addressBox).prepend(personBox).prepend(invoiceBox);
+
+        wrapper.data('ccif-boxes-created', true);
+    }
+
+    /**
      * Shows/hides fields based on the selected person type.
      */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
-        $('.real-person-field').closest('.form-row').hide();
-        $('.legal-person-field').closest('.form-row').hide();
+        $('.ccif-real-person-field').closest('.form-row').hide();
+        $('.ccif-legal-person-field').closest('.form-row').hide();
 
         if (personType === 'real') {
-            $('.real-person-field').closest('.form-row').show();
+            $('.ccif-real-person-field').closest('.form-row').show();
         } else if (personType === 'legal') {
-            $('.legal-person-field').closest('.form-row').show();
+            $('.ccif-legal-person-field').closest('.form-row').show();
         }
     }
 
     /**
      * Updates the 'required' status of invoice fields based on the invoice checkbox.
-     * Address fields are always required and are not affected.
      */
     function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
-        $('.invoice-field').each(function() {
-            var $inputOrSelect = $(this).find('input, select');
-            if (!$inputOrSelect.length) {
-                $inputOrSelect = $(this);
-            }
-
+        $('.ccif-invoice-field').each(function() {
+            var $inputOrSelect = $(this).find('input, select').addBack(this);
             var $wrapper = $inputOrSelect.closest('.form-row');
 
-            // Set the required property on the actual input/select
             $inputOrSelect.prop('required', isInvoiceRequested);
 
-            // Toggle the class on the wrapper to show/hide the asterisk
             if (isInvoiceRequested) {
                 $wrapper.addClass('validate-required');
             } else {
@@ -48,7 +67,6 @@ jQuery(function($) {
             }
         });
 
-        // Trigger checkout update to refresh validation UI
         $(document.body).trigger('update_checkout');
     }
 
@@ -64,11 +82,7 @@ jQuery(function($) {
 
         if (state && cities[state]) {
             $.each(cities[state], function(index, cityName) {
-                $cityField.append($('<option>', {
-                    value: cityName,
-                    text: cityName,
-                    selected: cityName === currentCity
-                }));
+                $cityField.append($('<option>', { value: cityName, text: cityName, selected: cityName === currentCity }));
             });
         }
     }
@@ -78,7 +92,8 @@ jQuery(function($) {
     $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
     $('body').on('change', '#billing_state', populateCities);
 
-    // --- Initial Execution on Page Load ---
+    // --- Initial Execution ---
+    createVisualBoxes();
     togglePersonFields();
     updateRequiredStatus();
 

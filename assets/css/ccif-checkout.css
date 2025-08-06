@@ -5,6 +5,8 @@
     margin-bottom: 25px;
     border-radius: 5px;
     background-color: #f9f9f9;
+    /* Add this to contain floated elements inside */
+    overflow: hidden;
 }
 
 .ccif-box h2 {
@@ -15,54 +17,45 @@
     font-size: 18px;
 }
 
-/* --- General Form Styling --- */
-.ccif-checkout-form .form-row {
-    padding: 0; /* Override default padding if any */
+/* Specific box for the invoice request to make it stand out */
+.invoice-request-box {
+    background-color: #f0f5fa;
+    border-color: #b0c4de;
+}
+
+/* --- General Form Row Styling --- */
+.woocommerce-billing-fields .form-row {
+    padding: 0;
     margin: 0 0 15px;
 }
 
-/* Ensure floated rows don't overlap and have correct spacing */
-.ccif-checkout-form .form-row-first {
+.woocommerce-billing-fields .form-row-first {
     float: right;
-    width: 48%;
+    width: 48.5%;
     clear: none;
 }
 
-.ccif-checkout-form .form-row-last {
+.woocommerce-billing-fields .form-row-last {
     float: left;
-    width: 48%;
+    width: 48.5%;
     clear: none;
 }
 
-.ccif-checkout-form .form-row-wide {
+.woocommerce-billing-fields .form-row-wide {
     clear: both;
 }
 
 /* --- Required Field Asterisk --- */
 /* This targets the standard WooCommerce required field markup, which is an <abbr> tag. */
 .woocommerce-checkout .form-row.validate-required label .required {
-    visibility: visible;
-    color: #e74c3c;
-    font-weight: bold;
-    text-decoration: none;
-    border: 0;
+    visibility: visible !important;
+    color: #e74c3c !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    border: 0 !important;
 }
 
 /* Hide any ::after pseudo-elements on the label to prevent double asterisks */
 .woocommerce-checkout .form-row.validate-required label::after {
     content: "" !important;
-}
-
-/* --- Place Order Button --- */
-#place_order {
-    background-color: #3498db !important;
-    color: #fff !important;
-    padding: 12px 30px !important;
-    border-radius: 4px !important;
-    font-size: 16px !important;
-    transition: background 0.3s ease;
-}
-
-#place_order:hover {
-    background-color: #2980b9 !important;
 }
