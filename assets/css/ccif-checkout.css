@@ -1,50 +1,50 @@
-/* General form styling */
-.woocommerce-checkout .form-row {
-    margin-bottom: 18px;
-    /* Ensure rows don't overlap, especially with floats */
-    clear: both;
-}
-
-.woocommerce-checkout .form-row input.input-text,
-.woocommerce-checkout .form-row select,
-.woocommerce-checkout .form-row textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-}
-
-/* --- Invoice Box --- */
-#billing_invoice_request_field {
-    background-color: #f7f7f7;
+/* --- Box Styling --- */
+.ccif-box {
     border: 1px solid #e0e0e0;
-    padding: 15px;
-    margin-top: 20px;
-    margin-bottom: 25px !important; /* Add extra space after the box */
+    padding: 20px;
+    margin-bottom: 25px;
     border-radius: 5px;
+    background-color: #f9f9f9;
 }
 
-#billing_invoice_request_field label {
-    font-weight: bold;
+.ccif-box h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    font-size: 18px;
 }
 
-#billing_invoice_request {
-    /* Style the checkbox itself */
-    transform: scale(1.2);
-    margin-left: 8px;
-    vertical-align: middle;
+/* --- General Form Styling --- */
+.ccif-checkout-form .form-row {
+    padding: 0; /* Override default padding if any */
+    margin: 0 0 15px;
+}
+
+/* Ensure floated rows don't overlap and have correct spacing */
+.ccif-checkout-form .form-row-first {
+    float: right;
+    width: 48%;
+    clear: none;
+}
+
+.ccif-checkout-form .form-row-last {
+    float: left;
+    width: 48%;
+    clear: none;
+}
+
+.ccif-checkout-form .form-row-wide {
+    clear: both;
 }
 
 /* --- Required Field Asterisk --- */
 /* This targets the standard WooCommerce required field markup, which is an <abbr> tag. */
-/* We ensure it's visible and styled correctly. */
-.woocommerce-checkout .form-row.validate-required .required {
+.woocommerce-checkout .form-row.validate-required label .required {
     visibility: visible;
     color: #e74c3c;
     font-weight: bold;
-    text-decoration: none; /* Remove underline from abbr tag */
+    text-decoration: none;
     border: 0;
 }
 

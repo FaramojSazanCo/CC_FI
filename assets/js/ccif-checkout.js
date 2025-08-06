@@ -9,16 +9,12 @@ jQuery(function($) {
 
     /**
      * Shows/hides fields based on the selected person type.
-     * This function ONLY handles visibility.
      */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
-
-        // Hide all person-specific fields first for a clean state
         $('.real-person-field').closest('.form-row').hide();
         $('.legal-person-field').closest('.form-row').hide();
 
-        // Show the fields for the selected person type
         if (personType === 'real') {
             $('.real-person-field').closest('.form-row').show();
         } else if (personType === 'legal') {
@@ -28,19 +24,23 @@ jQuery(function($) {
 
     /**
      * Updates the 'required' status of invoice fields based on the invoice checkbox.
-     * This function ONLY handles the required attribute and the asterisk.
+     * Address fields are always required and are not affected.
      */
     function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
-        $('.invoice-required').each(function() {
-            var $input = $(this);
-            var $wrapper = $input.closest('.form-row');
+        $('.invoice-field').each(function() {
+            var $inputOrSelect = $(this).find('input, select');
+            if (!$inputOrSelect.length) {
+                $inputOrSelect = $(this);
+            }
 
-            // Set the required property
-            $input.prop('required', isInvoiceRequested);
+            var $wrapper = $inputOrSelect.closest('.form-row');
 
-            // Add/remove WooCommerce's validation class to show/hide the asterisk
+            // Set the required property on the actual input/select
+            $inputOrSelect.prop('required', isInvoiceRequested);
+
+            // Toggle the class on the wrapper to show/hide the asterisk
             if (isInvoiceRequested) {
                 $wrapper.addClass('validate-required');
             } else {
@@ -79,8 +79,8 @@ jQuery(function($) {
     $('body').on('change', '#billing_state', populateCities);
 
     // --- Initial Execution on Page Load ---
-    togglePersonFields();   // Set initial visibility for person fields
-    updateRequiredStatus(); // Set initial required status for invoice fields
+    togglePersonFields();
+    updateRequiredStatus();
 
     if ($('#billing_state').val()) {
         populateCities();
