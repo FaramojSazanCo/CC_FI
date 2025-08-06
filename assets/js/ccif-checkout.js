@@ -6,47 +6,52 @@ jQuery(function($) {
         return;
     }
     var cities = ccifData.cities;
+    var requiredStar = ' <abbr class="required" title="required">*</abbr>';
 
-    /**
-     * Toggles the visibility of fields for Real vs. Legal persons.
-     */
     function togglePersonFields() {
         var personType = $('#billing_person_type').val();
-        $('.ccif-real-person-field').closest('.form-row').hide();
-        $('.ccif-legal-person-field').closest('.form-row').hide();
+        var $realPersonWrapper = $('.ccif-real-person-fields-wrapper');
+        var $legalPersonWrapper = $('.ccif-legal-person-fields-wrapper');
 
         if (personType === 'real') {
-            $('.ccif-real-person-field').closest('.form-row').show();
+            $realPersonWrapper.show();
+            $legalPersonWrapper.hide();
         } else if (personType === 'legal') {
-            $('.ccif-legal-person-field').closest('.form-row').show();
+            $legalPersonWrapper.show();
+            $realPersonWrapper.hide();
+        } else {
+            $realPersonWrapper.hide();
+            $legalPersonWrapper.hide();
         }
     }
 
-    /**
-     * Updates the 'required' status of fields based on the invoice checkbox.
-     */
     function updateRequiredStatus() {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
         $('.ccif-person-field').each(function() {
-            var $wrapper = $(this);
+            var $wrapper = $(this).closest('.form-row');
+            var $label = $wrapper.find('label');
             var $input = $wrapper.find('input, select');
-
             $input.prop('required', isInvoiceRequested);
-
             if (isInvoiceRequested) {
-                $wrapper.addClass('validate-required');
+                if ($label.find('.required').length === 0) {
+                    $label.append(requiredStar);
+                }
             } else {
-                $wrapper.removeClass('validate-required');
+                $label.find('.required').remove();
             }
         });
 
+        $('.ccif-address-field').each(function() {
+             var $label = $(this).find('label');
+             // The 'required' prop is set in PHP, so we just ensure the star is there.
+             if ($label.find('.required').length === 0) {
+                $label.append(requiredStar);
+             }
+        });
         $(document.body).trigger('update_checkout');
     }
 
-    /**
-     * Populates the city dropdown based on the selected state.
-     */
     function populateCities() {
         var state = $('#billing_state').val();
         var $cityField = $('#billing_city');
@@ -57,7 +62,6 @@ jQuery(function($) {
         }
 
         var currentCity = $cityField.val();
-
         $cityField.empty().append('<option value="">' + 'انتخاب کنید' + '</option>');
 
         if (cities[state]) {
@@ -69,17 +73,16 @@ jQuery(function($) {
                 }));
             });
         }
-        // CRITICAL FIX: Re-enable the city field after populating it.
+        // This is the critical fix for the disabled city field issue
         $cityField.prop('disabled', false);
     }
 
-    // --- Event Handlers ---
     $('body').on('change', '#billing_person_type', togglePersonFields);
     $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
     $('body').on('change', '#billing_state', populateCities);
 
-    // --- Initial Execution on Page Load ---
+    // Initial setup on page load
     togglePersonFields();
     updateRequiredStatus();
-    populateCities(); // Run on load to set initial state of city field
+    populateCities(); // This will correctly set the initial state of the city field
 });
