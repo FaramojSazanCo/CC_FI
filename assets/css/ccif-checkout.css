@@ -7,6 +7,7 @@
     background-color: #ffffff;
     /* This is crucial for containing the floated form-rows */
     overflow: hidden;
+    clear: both;
 }
 
 .ccif-box h2 {
@@ -22,6 +23,11 @@
 .invoice-request-box {
     background-color: #f5f8fa;
     border-color: #cdd8e3;
+    padding: 15px 20px;
+}
+
+.invoice-request-box label {
+    font-weight: bold;
 }
 
 /* --- General Form Row Styling --- */
@@ -54,4 +60,5 @@
     color: #e74c3c !important;
     font-weight: bold !important;
     text-decoration: none !important;
+    border: 0 !important;
 }
