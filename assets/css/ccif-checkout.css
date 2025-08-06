@@ -1,42 +1,69 @@
-/* --- Box Styling --- */
-.ccif-box {
-    border: 1px solid #e0e0e0;
-    padding: 20px;
-    margin-bottom: 25px;
-    border-radius: 5px;
-    background-color: #ffffff;
-    overflow: hidden;
-    clear: both;
+/* --- Simulated Box Styling --- */
+/* Add a top border to the first field of each group */
+#billing_invoice_request_field,
+#billing_person_type_field,
+#billing_state_field {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+    margin-top: 20px;
 }
 
-.ccif-box h2 {
-    margin-top: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
+/* Add a bottom border to the last field of each group */
+#billing_invoice_request_field,
+#billing_national_code_field,
+#billing_agent_last_name_field,
+#billing_phone_field {
+    padding-bottom: 20px;
     margin-bottom: 20px;
-    font-size: 18px;
-    color: #333;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.invoice-request-box {
+/* Special background for the invoice request "box" */
+#billing_invoice_request_field {
     background-color: #f5f8fa;
-    border-color: #cdd8e3;
-    padding: 15px 20px;
+    /* Use padding and negative margins to create a full-width background effect */
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: -15px;
+    margin-right: -15px;
 }
+
 
 /* --- General Form Row Styling --- */
-.ccif-box .form-row-first {
+.woocommerce-billing-fields .form-row {
+    padding: 0;
+    margin: 0 0 15px;
+}
+
+/* --- Label Styling --- */
+.woocommerce-billing-fields .form-row label {
+    display: block;
+    text-align: right;
+    margin-bottom: 5px;
+}
+
+.woocommerce-billing-fields .form-row-first {
     float: right;
     width: 48.5%;
     clear: none;
 }
 
-.ccif-box .form-row-last {
+.woocommerce-billing-fields .form-row-last {
     float: left;
     width: 48.5%;
     clear: none;
 }
 
-.ccif-box .form-row-wide {
+.woocommerce-billing-fields .form-row-wide {
     clear: both;
+}
+
+/* --- Required Field Asterisk --- */
+.woocommerce-checkout .form-row.validate-required label .required {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    border: 0 !important;
+    float: left;
+    margin-right: 5px;
 }
