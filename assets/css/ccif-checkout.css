@@ -24,23 +24,7 @@
     padding: 15px 20px;
 }
 
-.invoice-request-box label {
-    font-weight: bold;
-}
-
 /* --- General Form Row Styling --- */
-.ccif-box .form-row {
-    padding: 0;
-    margin: 0 0 15px;
-}
-
-/* --- Label Styling --- */
-.ccif-box .form-row label {
-    display: block;
-    text-align: right;
-    margin-bottom: 5px;
-}
-
 .ccif-box .form-row-first {
     float: right;
     width: 48.5%;
@@ -55,14 +39,4 @@
 
 .ccif-box .form-row-wide {
     clear: both;
-}
-
-/* --- Required Field Asterisk --- */
-.woocommerce-checkout .form-row label .required {
-    color: #e74c3c !important;
-    font-weight: bold !important;
-    text-decoration: none !important;
-    border: 0 !important;
-    float: left; /* Position to the left of the label text */
-    margin-right: 5px;
 }
