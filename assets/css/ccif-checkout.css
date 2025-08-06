@@ -43,21 +43,3 @@
 .ccif-box .form-row-wide {
     clear: both;
 }
-
-/* --- Label Styling --- */
-.woocommerce-billing-fields .form-row label {
-    display: block;
-    text-align: right;
-    margin-bottom: 5px;
-}
-
-.woocommerce-billing-fields .form-row label .required {
-    /* The JS now handles adding/removing the <abbr> tag, so we just need to make sure
-       it has the default WooCommerce color, just in case the theme overrides it. */
-    color: #e74c3c !important;
-    font-weight: bold !important;
-    text-decoration: none !important;
-    border: 0 !important;
-    float: left;
-    margin-right: 5px;
-}

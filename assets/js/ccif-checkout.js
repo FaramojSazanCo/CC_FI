@@ -1,6 +1,9 @@
 jQuery(function($) {
     'use strict';
 
+    // This is the baseline JS for the rebuilt structure.
+    // It does not yet contain the final bug fixes for city field and labels.
+
     if (typeof ccifData === 'undefined' || !ccifData.cities) {
         console.error('CCIF Iran Checkout: City data is not available.');
         return;
@@ -29,7 +32,7 @@ jQuery(function($) {
         var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
         $('.ccif-person-field').each(function() {
-            var $wrapper = $(this).closest('.form-row');
+            var $wrapper = $(this);
             var $label = $wrapper.find('label');
             var $input = $wrapper.find('input, select');
             $input.prop('required', isInvoiceRequested);
@@ -44,7 +47,6 @@ jQuery(function($) {
 
         $('.ccif-address-field').each(function() {
              var $label = $(this).find('label');
-             // The 'required' prop is set in PHP, so we just ensure the star is there.
              if ($label.find('.required').length === 0) {
                 $label.append(requiredStar);
              }
@@ -55,34 +57,22 @@ jQuery(function($) {
     function populateCities() {
         var state = $('#billing_state').val();
         var $cityField = $('#billing_city');
-
-        if (!state) {
-            $cityField.empty().append('<option value="">ابتدا استان را انتخاب کنید</option>').prop('disabled', true);
-            return;
-        }
-
         var currentCity = $cityField.val();
-        $cityField.empty().append('<option value="">' + 'انتخاب کنید' + '</option>');
-
-        if (cities[state]) {
+        $cityField.empty().append('<option value="">' + 'ابتدا استان را انتخاب کنید' + '</option>');
+        if (state && cities[state]) {
             $.each(cities[state], function(index, cityName) {
-                $cityField.append($('<option>', {
-                    value: cityName,
-                    text: cityName,
-                    selected: cityName === currentCity
-                }));
+                $cityField.append($('<option>', { value: cityName, text: cityName, selected: cityName === currentCity }));
             });
         }
-        // This is the critical fix for the disabled city field issue
-        $cityField.prop('disabled', false);
     }
 
     $('body').on('change', '#billing_person_type', togglePersonFields);
     $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
     $('body').on('change', '#billing_state', populateCities);
 
-    // Initial setup on page load
     togglePersonFields();
     updateRequiredStatus();
-    populateCities(); // This will correctly set the initial state of the city field
+    if ($('#billing_state').val()) {
+        populateCities();
+    }
 });
