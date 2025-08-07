@@ -1,13 +1,11 @@
-/* This is the baseline CSS for the rebuilt structure. */
-/* It does not yet contain the final bug fixes for labels. */
-
 /* --- Box Styling --- */
 .ccif-box {
-    border: 1px solid #e0e0e0;
+    border: 1px solid #8d6dff;
     padding: 20px;
     margin-bottom: 25px;
     border-radius: 5px;
-    background-color: #ffffff;
+    background-color: #e46060;
+    /* This is crucial for containing the floated form-rows */
     overflow: hidden;
     clear: both;
 }
@@ -15,19 +13,30 @@
 .ccif-box h2 {
     margin-top: 0;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #599e95;
     margin-bottom: 20px;
     font-size: 18px;
     color: #333;
 }
 
+/* Specific box for the invoice request to make it stand out */
 .invoice-request-box {
-    background-color: #f5f8fa;
-    border-color: #cdd8e3;
+    background-color: #d3e668;
+    border-color: #db603a;
     padding: 15px 20px;
 }
 
+.invoice-request-box label {
+    font-weight: bold;
+}
+
 /* --- General Form Row Styling --- */
+/* This ensures that the rows inside our boxes behave correctly */
+.ccif-box .form-row {
+    padding: 0;
+    margin: 0 0 15px;
+}
+
 .ccif-box .form-row-first {
     float: right;
     width: 48.5%;
@@ -42,4 +51,14 @@
 
 .ccif-box .form-row-wide {
     clear: both;
+}
+
+/* --- Required Field Asterisk --- */
+/* The JS now handles adding/removing the <abbr> tag, so we just need to make sure
+   it has the default WooCommerce color, just in case the theme overrides it. */
+.woocommerce-checkout .form-row label .required {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    border: 0 !important;
 }
