@@ -1,53 +1,64 @@
-/* فیونت فارسی مناسب */
-.woocommerce-checkout * {
-  font-family: 'Tahoma', sans-serif !important;
+/* --- Box Styling --- */
+.ccif-box {
+    border: 1px solid #8d6dff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 5px;
+    background-color: #ffcdcd;
+    /* This is crucial for containing the floated form-rows */
+    overflow: hidden;
+    clear: both;
 }
 
-/* فریم ورودی‌ها */
-.woocommerce-checkout .form-row input,
-.woocommerce-checkout .form-row select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
+.ccif-box h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #599e95;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #333;
 }
 
-/* فاصله بین ردیف‌ها */
-.woocommerce-checkout .form-row {
-  margin-bottom: 18px;
+/* Specific box for the invoice request to make it stand out */
+.invoice-request-box {
+    background-color: #d3e668;
+    border-color: #db603a;
+    padding: 15px 20px;
 }
 
-/* نمایش ستاره اجباری */
-.woocommerce-checkout .form-row.validate-required label:after {
-  content: "*";
-  color: #e74c3c;
-  margin-left: 4px;
+.invoice-request-box label {
+    font-weight: bold;
 }
 
-/* چک‌باکس فاکتور */
-#billing_invoice_request {
-  transform: scale(1.2);
-  margin-left: 8px;
-  vertical-align: middle;
+/* --- General Form Row Styling --- */
+/* This ensures that the rows inside our boxes behave correctly */
+.ccif-box .form-row {
+    padding: 0;
+    margin: 0 0 15px;
 }
 
-/* ردیف تمام‌عرض */
-.woocommerce-checkout .form-row-wide {
-  clear: both;
+.ccif-box .form-row-first {
+    float: right;
+    width: 48.5%;
+    clear: none;
 }
 
-/* دکمه ثبت سفارش */
-#place_order {
-  background-color: #3498db !important;
-  color: #fff !important;
-  padding: 12px 30px !important;
-  border-radius: 4px !important;
-  font-size: 16px !important;
-  transition: background 0.3s ease;
+.ccif-box .form-row-last {
+    float: left;
+    width: 48.5%;
+    clear: none;
 }
-#place_order:hover {
-  background-color: #2980b9 !important;
+
+.ccif-box .form-row-wide {
+    clear: both;
+}
+
+/* --- Required Field Asterisk --- */
+/* The JS now handles adding/removing the <abbr> tag, so we just need to make sure
+   it has the default WooCommerce color, just in case the theme overrides it. */
+.woocommerce-checkout .form-row label .required {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    border: 0 !important;
 }
