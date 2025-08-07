@@ -1,63 +1,78 @@
-jQuery(function($){
-    var cities = ccifData.cities || {};
+jQuery(function($) {
+    'use strict';
 
-    // تابع نمایش/مخفی‌سازی فیلدها بر اساس درخواست فاکتور و نوع شخص
-    function refreshFields() {
-        var invoice     = $('#billing_invoice_request').is(':checked');
-        var personType  = $('#billing_person_type').val();
+    // This is the baseline JS for the rebuilt structure.
+    // It does not yet contain the final bug fixes for city field and labels.
 
-        // اول همه real-only/ legal-only را مخفی و غیرفعال کن
-        $('.real-only, .legal-only')
-            .hide()
-            .find('input, select')
-            .prop('disabled', true)
-            .prop('required', false)
-            .closest('.form-row')
-            .removeClass('validate-required');
+    if (typeof ccifData === 'undefined' || !ccifData.cities) {
+        console.error('CCIF Iran Checkout: City data is not available.');
+        return;
+    }
+    var cities = ccifData.cities;
+    var requiredStar = ' <abbr class="required" title="required">*</abbr>';
 
-        if (! invoice) {
-            return; // اگر فاکتور نخواسته، همه فیلدها آزاد
-        }
+    function togglePersonFields() {
+        var personType = $('#billing_person_type').val();
+        var $realPersonWrapper = $('.ccif-real-person-fields-wrapper');
+        var $legalPersonWrapper = $('.ccif-legal-person-fields-wrapper');
 
-        // اگر شخص حقیقی باشد
         if (personType === 'real') {
-            $('.real-only')
-                .show()
-                .find('input, select')
-                .prop('disabled', false)
-                .prop('required', true)
-                .closest('.form-row')
-                .addClass('validate-required');
-        }
-
-        // اگر شخص حقوقی باشد
-        if (personType === 'legal') {
-            $('.legal-only')
-                .show()
-                .find('input, select')
-                .prop('disabled', false)
-                .prop('required', true)
-                .closest('.form-row')
-                .addClass('validate-required');
+            $realPersonWrapper.show();
+            $legalPersonWrapper.hide();
+        } else if (personType === 'legal') {
+            $legalPersonWrapper.show();
+            $realPersonWrapper.hide();
+        } else {
+            $realPersonWrapper.hide();
+            $legalPersonWrapper.hide();
         }
     }
 
-    // تغییر استان -> پر کردن شهرها
-    $('#billing_state').on('change', function(){
-        var state = $(this).val(),
-            $city = $('#billing_city').empty();
+    function updateRequiredStatus() {
+        var isInvoiceRequested = $('#billing_invoice_request').is(':checked');
 
-        $city.append('<option value="">ابتدا استان را انتخاب کنید</option>');
-        if (cities[state]) {
-            $.each(cities[state], function(i, name){
-                $city.append('<option value="'+name+'">'+name+'</option>');
+        $('.ccif-person-field').each(function() {
+            var $wrapper = $(this);
+            var $label = $wrapper.find('label');
+            var $input = $wrapper.find('input, select');
+            $input.prop('required', isInvoiceRequested);
+            if (isInvoiceRequested) {
+                if ($label.find('.required').length === 0) {
+                    $label.append(requiredStar);
+                }
+            } else {
+                $label.find('.required').remove();
+            }
+        });
+
+        $('.ccif-address-field').each(function() {
+             var $label = $(this).find('label');
+             if ($label.find('.required').length === 0) {
+                $label.append(requiredStar);
+             }
+        });
+        $(document.body).trigger('update_checkout');
+    }
+
+    function populateCities() {
+        var state = $('#billing_state').val();
+        var $cityField = $('#billing_city');
+        var currentCity = $cityField.val();
+        $cityField.empty().append('<option value="">' + 'ابتدا استان را انتخاب کنید' + '</option>');
+        if (state && cities[state]) {
+            $.each(cities[state], function(index, cityName) {
+                $cityField.append($('<option>', { value: cityName, text: cityName, selected: cityName === currentCity }));
             });
         }
-    });
+    }
 
-    // رویدادهای تغییر
-    $('#billing_invoice_request, #billing_person_type').on('change', refreshFields);
+    $('body').on('change', '#billing_person_type', togglePersonFields);
+    $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
+    $('body').on('change', '#billing_state', populateCities);
 
-    // مقداردهی اولیه
-    refreshFields();
+    togglePersonFields();
+    updateRequiredStatus();
+    if ($('#billing_state').val()) {
+        populateCities();
+    }
 });

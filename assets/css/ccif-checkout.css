@@ -1,53 +1,45 @@
-/* فیونت فارسی مناسب */
-.woocommerce-checkout * {
-  font-family: 'Tahoma', sans-serif !important;
+/* This is the baseline CSS for the rebuilt structure. */
+/* It does not yet contain the final bug fixes for labels. */
+
+/* --- Box Styling --- */
+.ccif-box {
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 5px;
+    background-color: #ffffff;
+    overflow: hidden;
+    clear: both;
 }
 
-/* فریم ورودی‌ها */
-.woocommerce-checkout .form-row input,
-.woocommerce-checkout .form-row select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
+.ccif-box h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #333;
 }
 
-/* فاصله بین ردیف‌ها */
-.woocommerce-checkout .form-row {
-  margin-bottom: 18px;
+.invoice-request-box {
+    background-color: #f5f8fa;
+    border-color: #cdd8e3;
+    padding: 15px 20px;
 }
 
-/* نمایش ستاره اجباری */
-.woocommerce-checkout .form-row.validate-required label:after {
-  content: "*";
-  color: #e74c3c;
-  margin-left: 4px;
+/* --- General Form Row Styling --- */
+.ccif-box .form-row-first {
+    float: right;
+    width: 48.5%;
+    clear: none;
 }
 
-/* چک‌باکس فاکتور */
-#billing_invoice_request {
-  transform: scale(1.2);
-  margin-left: 8px;
-  vertical-align: middle;
+.ccif-box .form-row-last {
+    float: left;
+    width: 48.5%;
+    clear: none;
 }
 
-/* ردیف تمام‌عرض */
-.woocommerce-checkout .form-row-wide {
-  clear: both;
-}
-
-/* دکمه ثبت سفارش */
-#place_order {
-  background-color: #3498db !important;
-  color: #fff !important;
-  padding: 12px 30px !important;
-  border-radius: 4px !important;
-  font-size: 16px !important;
-  transition: background 0.3s ease;
-}
-#place_order:hover {
-  background-color: #2980b9 !important;
+.ccif-box .form-row-wide {
+    clear: both;
 }
