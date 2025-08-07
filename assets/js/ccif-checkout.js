@@ -7,6 +7,8 @@ jQuery(function($) {
         return;
     }
     var cities = ccifData.cities;
+    var requiredStar = ' <abbr class="required" title="required">*</abbr>';
+
     /**
      * Toggles the visibility of fields for Real vs. Legal persons.
      */
@@ -15,11 +17,14 @@ jQuery(function($) {
         var $realPersonWrapper = $('.ccif-real-person-fields-wrapper');
         var $legalPersonWrapper = $('.ccif-legal-person-fields-wrapper');
 
-        if (personType === 'legal') {
+        if (personType === 'real') {
+            $realPersonWrapper.show();
+            $legalPersonWrapper.hide();
+        } else if (personType === 'legal') {
             $legalPersonWrapper.show();
             $realPersonWrapper.hide();
         } else {
-            $realPersonWrapper.show();
+            $realPersonWrapper.hide();
             $legalPersonWrapper.hide();
         }
     }
@@ -38,6 +43,15 @@ jQuery(function($) {
 
             // Set the required property on the input/select element
             $input.prop('required', isInvoiceRequested);
+
+            // Manually add or remove the asterisk to the label for visual feedback
+            if (isInvoiceRequested) {
+                if ($label.find('.required').length === 0) {
+                    $label.append(requiredStar);
+                }
+            } else {
+                $label.find('.required').remove();
+            }
         });
 
         // Trigger the WooCommerce event to update its validation state
@@ -54,7 +68,7 @@ jQuery(function($) {
         // Remember the current value if it exists
         var currentCity = $cityField.val();
 
-        $cityField.empty().append('<option value="">' + ccifData.i18n.select_state_first + '</option>');
+        $cityField.empty().append('<option value="">' + 'ابتدا استان را انتخاب کنید' + '</option>');
 
         if (state && cities[state]) {
             $.each(cities[state], function(index, cityName) {
@@ -69,7 +83,6 @@ jQuery(function($) {
     }
 
     // --- Event Handlers ---
-    // We use event delegation on the body element because the checkout form can be updated via AJAX.
     $('body').on('change', '#billing_person_type', togglePersonFields);
     $('body').on('change', '#billing_invoice_request', updateRequiredStatus);
     $('body').on('change', '#billing_state', populateCities);
