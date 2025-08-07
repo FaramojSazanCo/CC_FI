@@ -4,7 +4,7 @@
     padding: 20px;
     margin-bottom: 25px;
     border-radius: 5px;
-    background-color: #d8a3a3;
+    background-color: #ffcdcd;
     /* This is crucial for containing the floated form-rows */
     overflow: hidden;
     clear: both;
